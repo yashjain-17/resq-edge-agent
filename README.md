@@ -1,18 +1,40 @@
 # ResQ-Edge Agent
 
-An offline-first tactical AI co-pilot and agent skill for emergency response drones.
+An offline-first AI co-pilot and agent-skill prototype for emergency-response drone workflows.
 
-## Open-Weight Model & License
-- **Model:** Gemma 2 (9B) via [Ollama](https://ollama.com) (Terms: [Google Gemma License](https://ai.google.dev/gemma/terms))
-- **License:** MIT License (see [LICENSE](LICENSE))
+## Model
 
-## How to Run
-1. Pull and run your open-weight model locally:
-   \\\ash
-   ollama run gemma2:9b
-   \\\
-2. Start the FastAPI backend server:
-   \\\ash
-   python agent/server.py
-   \\\
+- **Model family:** Gemma 2 9B through [Ollama](https://ollama.com)
+- **Model terms:** [Google Gemma Terms](https://ai.google.dev/gemma/terms)
 
+The model runs locally. Hardware requirements depend on the model quantization and runtime configuration.
+
+## Prerequisites
+
+- Python
+- [Ollama](https://ollama.com)
+- The configured Gemma model available locally
+
+## Run locally
+
+Start the model in one terminal:
+
+```bash
+ollama run gemma2:9b
+```
+
+In a second terminal, from the repository root, start the agent API:
+
+```bash
+python agent/server.py
+```
+
+Install the project's declared Python dependencies if the server reports missing packages. Check the source and configuration for any additional environment variables or setup steps.
+
+## Responsible use
+
+This is a prototype to support emergency-response workflows. It must not replace trained incident commanders, pilots, emergency services, or established operating procedures. Verify generated recommendations before acting on them.
+
+## License
+
+See [LICENSE](LICENSE) for the software license. The model is governed separately by Google's Gemma terms.
