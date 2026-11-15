@@ -39,11 +39,19 @@ def health_check():
     try:
         response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=3)
         response.raise_for_status()
-        models = response.json().get("models", [])
+        payload = response.json()
+        if not isinstance(payload, dict):
+            raise ValueError("Unexpected Ollama response.")
+        models = payload.get("models", [])
+        if not isinstance(models, list):
+            raise ValueError("Unexpected Ollama model list.")
         return {
             "status": "online",
             "model_configured": MODEL_NAME,
-            "model_available": any(item.get("name") == MODEL_NAME for item in models),
+            "model_available": any(
+                isinstance(item, dict) and item.get("name") == MODEL_NAME
+                for item in models
+            ),
         }
     except (requests.RequestException, ValueError):
         return {"status": "offline", "model_configured": MODEL_NAME, "model_available": False}
