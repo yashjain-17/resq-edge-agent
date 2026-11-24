@@ -82,7 +82,20 @@ def query_agent(req: QueryRequest):
         )
         response.raise_for_status()
         result = response.json()
-        answer = result.get("response", "").strip()
+        if not isinstance(result, dict):
+            raise HTTPException(
+                status_code=502,
+                detail="The local model returned an invalid response payload.",
+            )
+
+        raw_answer = result.get("response")
+        if not isinstance(raw_answer, str):
+            raise HTTPException(
+                status_code=502,
+                detail="The local model returned an invalid response payload.",
+            )
+
+        answer = raw_answer.strip()
         if not answer:
             raise HTTPException(status_code=502, detail="The local model returned an empty response.")
         return {"response": answer, "model": MODEL_NAME, "status": "generated"}
