@@ -1,7 +1,9 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from agent.server import health_check
+from fastapi import HTTPException
+
+from agent.server import QueryRequest, health_check, query_agent
 
 
 class HealthCheckTests(unittest.TestCase):
@@ -37,6 +39,45 @@ class HealthCheckTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "online")
         self.assertFalse(result["model_available"])
+
+
+class QueryAgentResponseTests(unittest.TestCase):
+    @patch("agent.server.requests.post")
+    def test_rejects_non_object_model_payload(self, mock_post):
+        response = Mock()
+        response.json.return_value = ["unexpected", "list"]
+        mock_post.return_value = response
+
+        with self.assertRaises(HTTPException) as context:
+            query_agent(QueryRequest(prompt="Assess the telemetry"))
+
+        self.assertEqual(context.exception.status_code, 502)
+        self.assertEqual(
+            context.exception.detail,
+            "The local model returned an invalid response payload.",
+        )
+
+    @patch("agent.server.requests.post")
+    def test_rejects_non_string_model_response(self, mock_post):
+        response = Mock()
+        response.json.return_value = {"response": {"text": "not a string"}}
+        mock_post.return_value = response
+
+        with self.assertRaises(HTTPException) as context:
+            query_agent(QueryRequest(prompt="Assess the telemetry"))
+
+        self.assertEqual(context.exception.status_code, 502)
+
+    @patch("agent.server.requests.post")
+    def test_trims_valid_model_response(self, mock_post):
+        response = Mock()
+        response.json.return_value = {"response": "  Check battery level.  "}
+        mock_post.return_value = response
+
+        result = query_agent(QueryRequest(prompt="Assess the telemetry"))
+
+        self.assertEqual(result["response"], "Check battery level.")
+        self.assertEqual(result["status"], "generated")
 
 
 if __name__ == "__main__":
